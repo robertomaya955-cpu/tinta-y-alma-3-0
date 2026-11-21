@@ -1,0 +1,20 @@
+TINTA Y ALMA 3.0 - PAQUETE DE PREPARACION (NO PUBLICAR TODAVIA)
+
+Este paquete reemplaza el app.py inicial por la tienda completa.
+La informacion de pedidos, precios, packs, fichas y gastos se almacena en PostgreSQL.
+
+REQUISITOS DE RENDER:
+- DATABASE_URL: cadena de conexion PostgreSQL persistente (no incluirla en GitHub).
+- TINTA_ALMA_SECRET: secreto aleatorio seguro.
+- TINTA_ALMA_ADMIN_PASSWORD: contrasena privada.
+- GOOGLE_DRIVE_TOKEN_JSON: contenido completo de token.json en variable secreta, NO subir token.json.
+- Build: pip install -r requirements.txt
+- Start: gunicorn app:app
+
+ADVERTENCIAS IMPORTANTES:
+1. NO desplegar ni recibir pedidos reales hasta configurar PostgreSQL y revisar seguridad.
+2. Las fotos subidas de packs se guardan aun en disco local y NO son persistentes.
+3. La version conserva formularios sin proteccion CSRF y necesita revision de seguridad.
+4. La estrategia JSONB por documento puede perder actualizaciones con ventas simultaneas; migrar pedidos a filas individuales antes de uso real.
+5. No se migran automaticamente datos anteriores de archivos JSON.
+6. Usar solo PDFs sobre los que tengas derecho de distribucion.

@@ -12,11 +12,10 @@ from pypdf import PdfReader
 from flask import Flask, request, render_template_string, redirect, url_for, session, flash
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from storage import load_document, save_document
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("TINTA_ALMA_SECRET")
-if not app.secret_key or len(app.secret_key) < 32:
-    raise RuntimeError("Configurá TINTA_ALMA_SECRET (mínimo 32 caracteres aleatorios).")
+app.secret_key = os.environ["TINTA_ALMA_SECRET"]
 # Uso local de prueba. Antes de publicar, configurar una clave segura y HTTPS.
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -74,19 +73,11 @@ footer{border-top:1px solid #342535;padding:22px 0;color:#bba7b6;text-align:cent
 """
 
 def cargar_datos_libros():
-    try:
-        with open(BOOK_META_FILE, "r", encoding="utf-8") as archivo:
-            datos = json.load(archivo)
-        return datos if isinstance(datos, dict) else {}
-    except (OSError, json.JSONDecodeError):
-        return {}
+    return load_document("datos_libros", {})
 
 
 def guardar_datos_libros(datos):
-    temporal = BOOK_META_FILE + ".tmp"
-    with open(temporal, "w", encoding="utf-8") as archivo:
-        json.dump(datos, archivo, ensure_ascii=False, indent=2)
-    os.replace(temporal, BOOK_META_FILE)
+    save_document("datos_libros", datos)
 
 
 def titulo_y_autor(nombre):
@@ -96,20 +87,12 @@ def titulo_y_autor(nombre):
 
 
 def cargar_precios_libros():
-    if not os.path.exists(BOOK_PRICES_FILE):
-        return {}
-    try:
-        with open(BOOK_PRICES_FILE, "r", encoding="utf-8") as archivo:
-            datos = json.load(archivo)
-        return datos if isinstance(datos, dict) else {}
-    except (OSError, json.JSONDecodeError):
-        return {}
+    return load_document("precios_libros", {})
+
 
 def guardar_precios_libros(datos):
-    temporal = BOOK_PRICES_FILE + ".tmp"
-    with open(temporal, "w", encoding="utf-8") as archivo:
-        json.dump(datos, archivo, ensure_ascii=False, indent=2)
-    os.replace(temporal, BOOK_PRICES_FILE)
+    save_document("precios_libros", datos)
+
 
 def nombre_libro_drive(file_id):
     service = get_drive()
@@ -119,7 +102,7 @@ def nombre_libro_drive(file_id):
     return archivo["name"]
 
 def get_drive():
-    token_json = os.environ.get("TINTA_ALMA_GOOGLE_TOKEN_JSON", "").strip()
+    token_json = os.environ.get("GOOGLE_DRIVE_TOKEN_JSON")
     if token_json:
         creds = Credentials.from_authorized_user_info(json.loads(token_json), SCOPES)
     else:
@@ -382,27 +365,17 @@ UPLOAD_DIR = os.path.join(BASE_DIR, "static", "packs")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # 8 MB por archivo
 WHATSAPP_NUMBER = "5492257400129"  # WhatsApp de Tinta y Alma: formato internacional, solo dígitos.
-ADMIN_PASSWORD = os.environ.get("TINTA_ALMA_ADMIN_PASSWORD")
-if not ADMIN_PASSWORD or len(ADMIN_PASSWORD) < 12:
-    raise RuntimeError("Configurá TINTA_ALMA_ADMIN_PASSWORD (mínimo 12 caracteres).")
+ADMIN_PASSWORD = os.environ["TINTA_ALMA_ADMIN_PASSWORD"]
 UALA_ALIAS = "tintayalma.pdf"
 MEDIOS_PAGO = {"uala": "Ualá (transferencia)", "transferencia": "Transferencia bancaria", "efectivo": "Efectivo"}
 
 def cargar_packs():
-    if not os.path.exists(PACKS_FILE):
-        return []
-    try:
-        with open(PACKS_FILE, "r", encoding="utf-8") as archivo:
-            datos = json.load(archivo)
-        return datos if isinstance(datos, list) else []
-    except (OSError, json.JSONDecodeError):
-        return []
+    return load_document("packs", [])
+
 
 def guardar_packs(packs):
-    temporal = PACKS_FILE + ".tmp"
-    with open(temporal, "w", encoding="utf-8") as archivo:
-        json.dump(packs, archivo, ensure_ascii=False, indent=2)
-    os.replace(temporal, PACKS_FILE)
+    save_document("packs", packs)
+
 
 def precio_formateado(valor):
     try:
@@ -653,21 +626,11 @@ def packs_quitar_carrito(producto_id):
     return redirect(url_for("packs_carrito"))
 
 def cargar_pedidos():
-    if not os.path.exists(ORDERS_FILE):
-        return []
-    try:
-        with open(ORDERS_FILE, "r", encoding="utf-8") as archivo:
-            datos = json.load(archivo)
-        return datos if isinstance(datos, list) else []
-    except (OSError, json.JSONDecodeError):
-        return []
+    return load_document("pedidos", [])
 
 
 def guardar_pedidos(pedidos):
-    temporal = ORDERS_FILE + ".tmp"
-    with open(temporal, "w", encoding="utf-8") as archivo:
-        json.dump(pedidos, archivo, ensure_ascii=False, indent=2)
-    os.replace(temporal, ORDERS_FILE)
+    save_document("pedidos", pedidos)
 
 
 def normalizar_telefono(valor):
@@ -1242,18 +1205,11 @@ CATEGORIAS_GASTOS = ("Publicidad", "Compras", "Servicios", "Otros")
 
 
 def cargar_gastos():
-    if not os.path.exists(GASTOS_FILE):
-        return []
-    with open(GASTOS_FILE, "r", encoding="utf-8") as archivo:
-        datos = json.load(archivo)
-    return datos if isinstance(datos, list) else []
+    return load_document("gastos", [])
 
 
 def guardar_gastos(gastos):
-    temporal = GASTOS_FILE + ".tmp"
-    with open(temporal, "w", encoding="utf-8") as archivo:
-        json.dump(gastos, archivo, ensure_ascii=False, indent=2)
-    os.replace(temporal, GASTOS_FILE)
+    save_document("gastos", gastos)
 
 
 def fecha_pedido(pedido):
@@ -1541,4 +1497,4 @@ def descargar_libro(token,drive_id):
         abort(502)
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=int(os.environ.get("PORT", "5001")), debug=False)
+    app.run(host="127.0.0.1", port=5001, debug=False)
