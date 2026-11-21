@@ -1,0 +1,14 @@
+token.json
+credentials.json
+*.env
+.env*
+__pycache__/
+*.pyc
+*.db
+*.sqlite*
+pedidos.json
+precios_libros.json
+datos_libros.json
+packs.json
+gastos.json
+static/packs/

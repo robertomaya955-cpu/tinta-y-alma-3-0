@@ -1,0 +1,22 @@
+TINTA Y ALMA 3.0 - PAQUETE DE PREPARACION (NO LISTO PARA VENTAS REALES)
+
+Este ZIP contiene una COPIA del programa. No modifica tu instalacion local.
+
+CAMBIOS:
+- Contraseñas y clave de sesion obligatorias por variables de entorno.
+- Token de Google Drive opcional desde TINTA_ALMA_GOOGLE_TOKEN_JSON.
+- Archivo requirements.txt y .gitignore para GitHub.
+
+NO SUBAS a GitHub: token.json, credentials.json, pedidos.json, precios_libros.json, datos_libros.json, packs.json ni fotos privadas.
+
+PARA RENDER (solo cuando completemos la configuracion):
+Build command: pip install -r requirements.txt
+Start command: gunicorn --bind 0.0.0.0:$PORT app:app
+Variables obligatorias: TINTA_ALMA_SECRET, TINTA_ALMA_ADMIN_PASSWORD, TINTA_ALMA_GOOGLE_TOKEN_JSON.
+Variable para enlaces: TINTA_ALMA_PUBLIC_URL=https://TU-SITIO.onrender.com
+
+ATENCION: EL ALMACENAMIENTO DE PEDIDOS/PRECIOS/PACKS SIGUE SIENDO JSON LOCAL.
+En Render gratis los cambios se pueden perder. NO activar ventas reales ni confirmar pagos en esta version.
+Hay que migrar estos datos a una base persistente antes de publicar la tienda operativa.
+La autenticacion Google con token OAuth tambien requiere pruebas de renovacion segura.
+No enviar credenciales ni tokens por chat ni subirlos al repositorio.
