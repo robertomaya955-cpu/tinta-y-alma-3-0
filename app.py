@@ -102,7 +102,7 @@ def nombre_libro_drive(file_id):
     return archivo["name"]
 
 def get_drive():
-    token_json = os.environ.get("GOOGLE_DRIVE_TOKEN_JSON")
+    token_json = os.environ.get("TINTA_ALMA_GOOGLE_TOKEN_JSON")
     if token_json:
         creds = Credentials.from_authorized_user_info(json.loads(token_json), SCOPES)
     else:
