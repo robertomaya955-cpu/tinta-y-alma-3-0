@@ -879,7 +879,8 @@ def admin_detalle_pedido(pedido_id):
         nombre_estado, plantilla = estados[accion]
         pedido["estado"] = nombre_estado
         guardar_pedidos(pedidos)
-        return render_template_string("""<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Estado actualizado</title><style>body{background:#000;color:#fff;font-family:Georgia,serif;max-width:700px;margin:auto;padding:24px}h1{color:#d9a0b5}a{color:#f0b8ce}.panel{background:#171014;border:1px solid #70354b;border-radius:12px;padding:18px}</style><body><h1>Estado actualizado: {{ estado }}</h1><div class="panel"><p>El estado del pedido quedó guardado.</p></div><p><a href="{{ url_for('admin_detalle_pedido', pedido_id=pedido_id) }}">Volver al pedido</a> · <a href="{{ url_for('admin_pedidos') }}">Todos los pedidos</a></p></body></html>""", estado=nombre_estado, pedido_id=pedido_id)
+        flash(f"Estado actualizado correctamente: {nombre_estado}")
+        return redirect(url_for("admin_detalle_pedido", pedido_id=pedido_id))
 
     # WhatsApp se abre con un mensaje prearmado: el administrador decide si lo envía.
     # Para entregas fuera de esta PC se necesita una URL pública HTTPS configurada.
