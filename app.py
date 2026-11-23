@@ -851,7 +851,7 @@ def admin_detalle_pedido(pedido_id):
             guardar_pedidos([p for p in pedidos if p.get("id") != pedido_id])
             flash("Pedido eliminado definitivamente.")
             return redirect(url_for("admin_pedidos"))
-                if accion == "cancelar_pago":
+        if accion == "cancelar_pago":
             pedido["estado_pago"] = "Cancelado"
             pedido["estado"] = "Pendiente de confirmación"
             pedido["token_descarga"] = ""
