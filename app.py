@@ -902,83 +902,18 @@ def admin_detalle_pedido(pedido_id):
         if enlace_entrega_publico and 10 <= len(whatsapp_cliente) <= 15
         and pedido.get("estado_pago") == "Pagado" else ""
     )
-    return render_template_string("""<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">*{box-sizing:border-box}
-body{
-    background:#080608;
-    color:#fff5f8;
-    font-family:Arial,sans-serif;
-    max-width:1100px;
-    margin:auto;
-    padding:28px;
-}
-h1{
-    color:#e8c77d;
-    font-size:30px;
-}
-h2{
-    color:#edb8d1;
-    font-size:23px;
-}
-h3{color:#e8c77d}
-a{color:#f0b8ce}
-.panel{
-    background:linear-gradient(145deg,#21151d,#140e14);
-    border:1px solid #80546d;
-    border-radius:20px;
-    padding:25px;
-    margin:22px 0;
-    box-shadow:0 8px 25px rgba(0,0,0,.4);
-}
-.estado{
-    background:#39212f;
-    color:#f5c4dc;
-    font-weight:bold;
-    border-radius:12px;
-    padding:14px;
-}
-.fila{
-    background:#281b25;
-    border-bottom:1px solid #80546d;
-    border-radius:10px;
-    padding:16px;
-    margin:8px 0;
-}
-button{
-    background:linear-gradient(135deg,#a45c82,#70354b);
-    color:white;
-    border:1px solid #b77b99;
-    border-radius:12px;
-    padding:14px 20px;
-    font-weight:bold;
-    cursor:pointer;
-    margin:6px 0;
-    transition:.2s;
-}
-button:hover{
-    background:#bd779b;
-    transform:translateY(-2px);
-}
-.acciones form{
-    display:inline-block;
-    margin:6px;
-}
-input,select{
-    background:#30212c;
-    color:white;
-    border:1px solid #80546d;
-    border-radius:9px;
-    padding:12px;
-    max-width:100%;
-}
-p{line-height:1.7}
-small{color:#d5b6c9}
-@media(max-width:600px){
-    body{padding:12px}
-    .panel{padding:16px}
-    h1{font-size:24px}
-    .acciones form{display:block;margin:10px 0}
-    button{width:100%}
-}
+    return render_template_string("""<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Detalle del pedido</title><style>body{background:#000;color:#fff;font-family:Georgia,serif;max-width:760px;margin:auto;padding:24px}h1,h2{color:#d9a0b5}a{color:#f0b8ce}.panel{background:#171014;border:1px solid #70354b;border-radius:14px;padding:18px;margin:16px 0}.estado{color:#f0b8ce;font-weight:bold}.fila{border-bottom:1px solid #492633;padding:10px 0}button{background:#986d82;color:white;border:0;border-radius:20px;padding:12px 16px;cursor:pointer;margin:5px 0}.acciones form{display:inline-block;margin:5px}</style></head><body><h1>📦 Detalles del pedido</h1><section class="panel"><h2>Pedido N.º {{ p.id }}</h2><p class="estado">Estado: {{ p.estado }}</p><p><strong>Nombre:</strong> {{ p.nombre or 'No informado' }}<br><strong>Fecha:</strong> {{ p.creado }}<br><strong>Medio de pago:</strong> {{ p.get('medio_pago', 'Sin registrar') }}<br><strong>Pago:</strong> {{ p.get('estado_pago', 'Sin registrar') }}</p><h3>Productos</h3>{% for producto in p.productos %}<div class="fila">{{ producto.nombre }} × {{ producto.cantidad }} — {{ producto.subtotal|precio }}</div>{% endfor %}<h2>Total: {{ p.total|precio }}</h2><div style="background:#2c2030;border:1px solid #80546d;border-radius:12px;padding:15px"><h3>📚 Vincular libros antiguos a Google Drive</h3><p>Si un libro no tiene descarga, vinculalo aquí. Primero se busca por nombre exacto. Si hay varias coincidencias, ingresá el ID correcto de Drive.</p>{% for producto in p.productos %}{% if producto.nombre.startswith('Libro:') %}<p><strong>{{ producto.nombre }}</strong> — {% if producto.get('drive_id') %}✅ Vinculado{% else %}⚠️ Sin vincular{% endif %}</p>{% if not producto.get('drive_id') %}<form method="post"><input type="hidden" name="estado" value="vincular_pdf"><input type="hidden" name="indice" value="{{ loop.index0 }}"><input name="drive_id" placeholder="ID de Google Drive (opcional)" style="width:100%;max-width:390px;padding:10px;margin:6px 0"><button type="submit">🔗 Vincular PDF</button></form>{% endif %}{% endif %}{% endfor %}</div>{% with mensajes=get_flashed_messages() %}{% for mensaje in mensajes %}<p style="color:#f2bfd3">{{ mensaje }}</p>{% endfor %}{% endwith %}{% if p.get('estado_pago') == 'Pagado'  and p.get('token_descarga') %}<p><strong>Enlace privado de entrega:</strong><br><input style="width:100%;padding:9px" readonly value="{{ url_for('entrega_pedido', token=p.token_descarga, _external=True) }}" onclick="this.select()"><br><a href="{{ url_for('entrega_pedido', token=p.token_descarga) }}" target="_blank" rel="noopener" style="display:inline-block;background:#a45c82;color:white;padding:13px 18px;border-radius:11px;text-decoration:none;margin:12px 0 5px;font-weight:bold">📚 ABRIR PÁGINA DE DESCARGA</a>{% for libro in p.productos %}{% if libro.get('drive_id') %}<br><a href="{{ url_for('descargar_libro', token=p.token_descarga, drive_id=libro.drive_id) }}" style="display:inline-block;background:#b46b93;color:white;padding:13px 18px;border-radius:11px;text-decoration:none;margin:7px 0;font-weight:bold">📥 DESCARGAR LIBRO PDF — {{ libro.nombre }}</a>{% endif %}{% endfor %}<div style="margin:16px 0;padding:16px;background:#241b28;border:1px solid #7b526c;border-radius:12px"><h3>📲 Entregar por WhatsApp</h3>{% if enlace_whatsapp_entrega %}<p>Se abrirá el chat del comprador con el mensaje y el enlace privado preparados. <strong>Revisá el texto antes de enviarlo.</strong></p><a href="{{ enlace_whatsapp_entrega }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#28805b;color:white;padding:13px 18px;border-radius:11px;text-decoration:none;font-weight:bold">📲 PREPARAR ENVÍO POR WHATSAPP</a>{% elif not enlace_entrega_publico %}<p>Para enviar un enlace que el comprador pueda abrir desde su celular, primero hay que publicar Tinta y Alma con HTTPS y configurar la variable <code>TINTA_ALMA_PUBLIC_URL</code>. Los enlaces <code>127.0.0.1</code> solo funcionan en esta computadora.</p><p>Por seguridad, el botón de envío permanece desactivado hasta contar con una dirección pública válida.</p>{% else %}<p>Este pedido no tiene un número de WhatsApp válido (10 a 15 dígitos). Podés consultarlo con el comprador antes de enviar.</p>{% endif %}<p style="font-size:13px;color:#d5b6c9">Esta función no envía mensajes automáticamente ni requiere WhatsApp Business API.</p></div><br><small>Vence: {{ p.get('descarga_vence_en','') }} (UTC). Compartí solamente el enlace privado con el comprador; el botón de descarga directa es para usar desde este panel. Funciona desde esta computadora; para acceso externo se necesita publicación segura.</small></p>{% endif %}<p><strong>Tipo:</strong> {% if p.get("es_prueba") %}🧪 Pedido de prueba (excluido de informes){% else %}Venta real{% endif %}</p></section><section class="panel"><h2>Actualizar estado</h2><p>Al elegir un estado, se guardará en el pedido.</p><div class="acciones"><form method="post"><input type="hidden" name="estado" value="pagado"><label>Medio de pago <select name="medio_pago" required><option value="uala">Ualá</option><option value="transferencia">Transferencia bancaria</option><option value="efectivo">Efectivo</option></select></label><button type="submit" onclick="return confirm('¿Verificaste que recibiste el importe COMPLETO?')">💰 Confirmar pago completo</button></form>{% for clave, etiqueta in [('confirmado','✅ Confirmar pedido'),('enviado','📦 Marcar como enviado'),('entregado','🏡 Marcar como entregado')] %}<form method="post"><input type="hidden" name="estado" value="{{ clave }}"><button type="submit">{{ etiqueta }}</button></form>{% endfor %}<form method="post"><input type="hidden" name="estado" value="cancelar_pago"><button type="submit" onclick="return confirm('¿Cancelar el pago?')">❌ Cancelar pago</button></form></div></section><section class="panel"><h2>🧪 Pruebas y eliminación</h2>
+<p>Los pedidos de prueba se conservan, pero no cuentan en ventas, cobros ni informes.</p>
+{% if p.get('es_prueba') %}<form method="post"><input type="hidden" name="estado" value="marcar_real"><button type="submit">✅ Volver a marcar como venta real</button></form>
+{% else %}<form method="post"><input type="hidden" name="estado" value="marcar_prueba"><button type="submit">🧪 Marcar como prueba</button></form>{% endif %}
+<p><strong>Eliminar definitivamente:</strong> esta acción no se puede deshacer. Escribí ELIMINAR para confirmar.</p>
+<form method="post" onsubmit="return confirm('¿Eliminar definitivamente este pedido?')"><input type="hidden" name="estado" value="eliminar_pedido"><input name="confirmacion" placeholder="Escribí ELIMINAR" required autocomplete="off"><button type="submit" style="background:#9c3046">🗑️ Eliminar pedido</button></form>
+</section><p><a href="{{ url_for('admin_pedidos') }}">← Volver a todos los pedidos</a></p></body></html>""", p=pedido, enlace_whatsapp_entrega=enlace_whatsapp_entrega, enlace_entrega_publico=enlace_entrega_publico)
+
+
+# ===================== PANEL UNIFICADO =====================
+PANEL_HTML = """<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ titulo }} · Administración Tinta y Alma</title><style>
 :root{--bg:#100d14;--side:#211725;--card:#281d2c;--rose:#edb8d1;--line:#60455c;--text:#fff5fb}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Arial,sans-serif}
 a{color:var(--rose);text-decoration:none}.layout{display:flex;min-height:100vh}.sidebar{width:240px;flex-shrink:0;background:var(--side);border-right:1px solid var(--line);padding:25px 16px}.logo{font:25px Georgia,serif;color:var(--rose);margin-bottom:6px}.subtitle{font-size:12px;color:#cbb6c8;margin-bottom:28px}.sidebar a{display:block;color:#f5dbe9;padding:12px;border-radius:10px;margin:3px 0}.sidebar a:hover,.sidebar a.active{background:#55364e}.main{flex:1;min-width:0;padding:34px;max-width:1500px}h1{font:34px Georgia,serif;color:var(--rose);margin:0 0 8px}h2{font:24px Georgia,serif;color:var(--rose)}.muted{color:#cbb6c8}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:25px 0}.card,.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}.number{font-size:30px;font-weight:bold;color:var(--rose)}.actions{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0}.button,button{background:#a45c82;border:0;border-radius:10px;color:white;padding:10px 15px;cursor:pointer;display:inline-block;font:inherit}.button:hover,button:hover{background:#c0789f}.tablewrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;text-align:left}.table th,.table td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}.table th{color:var(--rose)}input,select{padding:10px;border:1px solid #aa86a1;border-radius:8px;max-width:100%}.search{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.search input{min-width:230px}.notice{padding:14px;background:#3b2939;border-radius:10px}.pager{display:flex;gap:15px;align-items:center;margin:25px 0}.badge{border-radius:20px;padding:4px 9px;background:#503449;color:#f9d8e8;font-size:12px}
